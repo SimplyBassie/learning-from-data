@@ -5,7 +5,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score
 
 
-train = pd.read_csv('hyperp-training-grouped.csv.xz',
+train = pd.read_csv('../Data/hyperp-training-grouped.csv.xz',
                     compression='xz',
                     sep='\t',
                     encoding='utf-8',
