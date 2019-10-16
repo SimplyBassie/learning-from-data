@@ -11,9 +11,8 @@ train = pd.read_csv('../Data/hyperp-training-grouped.csv.xz',
                     encoding='utf-8',
                     index_col=0).dropna()
 
-train.sample(3)
-pipeline = Pipeline([('vec', CountVectorizer()),
-                    ('clf', MultinomialNB())])
+
+pipeline = Pipeline([('vec', CountVectorizer()), ('clf', MultinomialNB())])
 model = pipeline.fit(train.text, train.hyperp)
 y_pred = model.predict(train.text)
 print(accuracy_score(y_pred, train.hyperp))
