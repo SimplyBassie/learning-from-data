@@ -73,7 +73,7 @@ def main():
 
     training_data, test_data = read_data(trainfile, testfile)
     Xtrain, Xtest = training_data['text'], test_data['text']
-    Ytrain, Ytest = training_data['bias'], test_data['bias']
+    Ytrain, Ytest = training_data['hyperp'], test_data['hyperp']
 
     print("length of train set:", len(Xtrain))
     print("length of test set:", len(Xtest))
