@@ -5,8 +5,11 @@ from sklearn.model_selection import ShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score
 from keras import layers
+from keras import losses
+from keras import optimizers
 import sys
 import numpy as np
+from keras.utils import to_categorical
 
 def read_data():
     data = pd.read_csv('../Data/hyperp-training-grouped.csv.xz',
@@ -15,13 +18,9 @@ def read_data():
                         encoding='utf-8',
                         index_col=0).dropna()
 
-    print("Distribution of classes original:")
-    print(data['hyperp'].value_counts())
     data1 = data[(data.index < np.percentile(data.index, 10))] #smaller dataset
     data2 = data[(data.index > np.percentile(data.index, 90))] #smaller dataset
     data = pd.concat([data1, data2])
-    print("Distribution of classes after picking part:")
-    print(data['hyperp'].value_counts())
     return data
 
 def main():
@@ -43,8 +42,8 @@ def main():
         Xtest  = vectorizer.transform(Xtest)
         Ytrain = encoder.fit_transform(Ytrain)
         Ytest = encoder.fit_transform(Ytest)
-
-        print(Ytrain)
+        #Ytrain = to_categorical(Ytrain)
+        #Ytest = to_categorical(Ytest)
 
         input_dim = Xtrain.shape[1]
 
@@ -52,11 +51,12 @@ def main():
         model.add(layers.Dense(10, input_dim = input_dim, activation = 'relu'))
         model.add(layers.Dense(1, activation = 'sigmoid'))
 
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        model.compile(loss = 'mean_squared_error', optimizer='adam', metrics=['accuracy'])
         model.summary()
 
         history = model.fit(Xtrain, Ytrain,epochs = 5 ,verbose=True, validation_data=(Xtest, Ytest), batch_size=30)
 
+        """
         yhat_probs = model.predict(Xtest, verbose=0)
         yhat_classes = model.predict_classes(Xtest, verbose=0)
 
@@ -75,6 +75,7 @@ def main():
         # f1: 2 tp / (2 tp + fp + fn)
         f1 = f1_score(Ytest, yhat_classes)
         print('F1 score: %f' % f1)
+        """
 
 if __name__ == '__main__':
     main()
