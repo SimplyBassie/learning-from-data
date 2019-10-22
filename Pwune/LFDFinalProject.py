@@ -21,21 +21,17 @@ from sklearn.model_selection import ShuffleSplit
 
 
 
-def read_data():
-    data = pd.read_csv('../Data/hyperp-training-grouped.csv.xz',
-                        compression='xz',
+def read_data(trainfile, testfile):
+    training_data = pd.read_csv(trainfile,
+                        sep='\t',
+                        encoding='utf-8',
+                        index_col=0).dropna()
+    test_data = pd.read_csv(testfile,
                         sep='\t',
                         encoding='utf-8',
                         index_col=0).dropna()
 
-    print("Distribution of classes original:")
-    print(data['bias'].value_counts())
-    data1 = data[(data.index < np.percentile(data.index, 10))] #smaller dataset
-    data2 = data[(data.index > np.percentile(data.index, 90))] #smaller dataset
-    data = pd.concat([data1, data2])
-    print("Distribution of classes after picking part:")
-    print(data['bias'].value_counts())
-    return data
+    return training_data, test_data
 
 def identity(x):
     return x
@@ -72,43 +68,40 @@ def print_n_most_informative_features(coefs, features, n):
 
 def main():
 
-    data = read_data()
-    X = np.array(data['text'].tolist())
-    Y = np.array(data['bias'].tolist())
+    trainfile = sys.argv[1]
+    testfile = sys.argv[2]
 
-    kf = ShuffleSplit(n_splits=1, test_size=0.1)
-    for train_index, test_index in kf.split(X):
-        #print(train_index, test_index)
-        Xtrain, Xtest = X[train_index], X[test_index]
-        Ytrain, Ytest = Y[train_index], Y[test_index]
+    training_data, test_data = read_data(trainfile, testfile)
+    Xtrain, Xtest = training_data['text'], test_data['text']
+    Ytrain, Ytest = training_data['bias'], test_data['bias']
 
-        print("length of train set:", len(Xtrain))
-        print("length of test set:", len(Xtest))
+    print("length of train set:", len(Xtrain))
+    print("length of test set:", len(Xtest))
 
 
 
-        #vec = TfidfVectorizer(tokenizer = tokenize,
-        #                      preprocessor = preprocess,
-        #                      ngram_range = (1,5))
-        vec = TfidfVectorizer()
+    #vec = TfidfVectorizer(tokenizer = tokenize,
+    #                      preprocessor = preprocess,
+    #                      ngram_range = (1,5))
+    vec = TfidfVectorizer()
 
-        clf1 = DecisionTreeClassifier(max_depth=20)
-        clf2 = KNeighborsClassifier(n_neighbors=9)
-        clf3 = LinearSVC(C=1)
-        #ens = VotingClassifier(estimators=[('dt', clf1), ('knn', clf2), ('svc', clf3)], voting='hard', weights=[1, 1, 1])
-        clf4 = MultinomialNB()
-        classifier = Pipeline( [('vec', vec), ('cls', clf3)] )
+    clf1 = DecisionTreeClassifier(max_depth=20)
+    clf2 = KNeighborsClassifier(n_neighbors=9)
+    clf3 = LinearSVC(C=1)
+    #ens = VotingClassifier(estimators=[('dt', clf1), ('knn', clf2), ('svc', clf3)], voting='hard', weights=[1, 1, 1])
+    clf4 = MultinomialNB()
+    classifier = Pipeline( [('vec', vec), ('cls', clf3)] )
 
-        classifier.fit(Xtrain, Ytrain)
+    classifier.fit(Xtrain, Ytrain)
 
-        #coefs = classifier.named_steps['cls'].coef_
-        #features = classifier.named_steps['vec'].get_feature_names()
-        #print_n_most_informative_features(coefs, features, 10)
+    coefs = classifier.named_steps['cls'].coef_
+    features = classifier.named_steps['vec'].get_feature_names()
+    print_n_most_informative_features(coefs, features, 10)
 
-        Yguess = classifier.predict(Xtest)
+    Yguess = classifier.predict(Xtest)
 
-        print(classification_report(Ytest, Yguess))
-        print(accuracy_score(Yguess, Ytest))
+    print(classification_report(Ytest, Yguess))
+    print(accuracy_score(Yguess, Ytest))
 
 if __name__ == '__main__':
     main()
