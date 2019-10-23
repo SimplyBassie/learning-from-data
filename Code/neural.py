@@ -35,8 +35,8 @@ def main():
     Ytrain_hyperp, Ytest_hyperp = training_data['hyperp'], test_data['hyperp']
     Ytrain_bias, Ytest_bias = training_data['bias'], test_data['bias']
 
-    print("length of train set:", len(Xtrain))
-    print("length of test set:", len(Xtest))
+    print("Length of train set:", len(Xtrain))
+    print("Length of test set:", len(Xtest))
 
     vectorizer = TfidfVectorizer()
     encoder = LabelEncoder()
@@ -53,10 +53,11 @@ def main():
 
     # Hyperp
     model = Sequential()
-    model.add(layers.Dense(10, input_dim = input_dim, activation = 'relu'))
-    model.add(layers.Dense(1, activation = 'sigmoid'))
+    model.add(layers.Dense(30, input_dim=input_dim, activation='relu'))
+    model.add(layers.Dense(20, activation='relu'))
+    model.add(layers.Dense(1, activation='sigmoid'))
     model.compile(loss = 'binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    history = model.fit(Xtrain, Ytrain_hyperp,epochs = 1 ,verbose=True, validation_data=(Xtest, Ytest_hyperp), batch_size=32)
+    history = model.fit(Xtrain, Ytrain_hyperp,epochs = 5 ,verbose=True, validation_data=(Xtest, Ytest_hyperp), batch_size=16)
 
     # Bias
     classifier = LinearSVC(C=1)
@@ -79,18 +80,19 @@ def main():
             i = "true"
             hyperp_prediction_list.append(i)
 
+    """
     output = list(zip(id_list, hyperp_prediction_list, bias_prediction_list))
     for i in output:
         print("{} {} {}".format(i[0], i[1], i[2]))
-
     """
+
     yhat_probs = yhat_probs[:, 0]
     yhat_classes = yhat_classes[:, 0]
 
     # accuracy: (tp + tn) / (p + n)
     accuracy = accuracy_score(Ytest_hyperp, yhat_classes)
     print("Accuracy of hyperp {}".format(accuracy))
-    """
+
     """
     # precision tp / (tp + fp)
     precision = precision_score(Ytest, yhat_classes)
