@@ -1,25 +1,21 @@
 from sklearn.metrics import accuracy_score
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report
 from sklearn.svm import LinearSVC
 import sys
 from nltk.corpus import stopwords
-from nltk.stem.snowball import SnowballStemmer
 from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import TweetTokenizer
 from nltk.tokenize import word_tokenize
 from sklearn.ensemble import VotingClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.model_selection import ShuffleSplit
+from nltk import word_tokenize
 #from keras.models import Sequential
 #from keras import layers
-
-
 
 def read_data(trainfile, testfile):
     training_data = pd.read_csv(trainfile,
@@ -37,23 +33,20 @@ def identity(x):
     return x
 
 def preprocess(tweet):
-    stemmer = SnowballStemmer('english')
     lemmatizer = WordNetLemmatizer()
     pptweetlist = []
-    tweet = stemmer.stem(tweet)
-    tweet = lemmatizer.lemmatize(tweet)
-    return tweet
+    for t in tweet.split():
+        pptweetlist.append(lemmatizer.lemmatize(t))
+    return " ".join(pptweetlist)
 
 def tokenize(tweet):
-    tknzr = TweetTokenizer()
     stop_words = stopwords.words('english')
-    wordlist = tknzr.tokenize(tweet)
+    wordlist = word_tokenize(tweet)
     wordlistwithoutstopwords = []
     for word in wordlist:
         if word not in stop_words:
             wordlistwithoutstopwords.append(word)
-    toktweet = " ".join(wordlistwithoutstopwords)
-
+    #toktweet = " ".join(wordlistwithoutstopwords)
     return wordlistwithoutstopwords
 
 
@@ -67,29 +60,26 @@ def print_n_most_informative_features(coefs, features, n):
 
 
 def main():
-
     trainfile = sys.argv[1]
     testfile = sys.argv[2]
 
     training_data, test_data = read_data(trainfile, testfile)
     Xtrain, Xtest = training_data['text'], test_data['text']
-    Ytrain, Ytest = training_data['hyperp'], test_data['hyperp']
+    Ytrain, Ytest = training_data['bias'], test_data['bias']
 
     print("length of train set:", len(Xtrain))
     print("length of test set:", len(Xtest))
 
+    vec = TfidfVectorizer(tokenizer = tokenize,
+                          preprocessor = preprocess)
+                          #ngram_range = (1,5))
+    #vec = TfidfVectorizer()
 
-
-    #vec = TfidfVectorizer(tokenizer = tokenize,
-    #                      preprocessor = preprocess,
-    #                      ngram_range = (1,5))
-    vec = TfidfVectorizer()
-
-    clf1 = DecisionTreeClassifier(max_depth=20)
-    clf2 = KNeighborsClassifier(n_neighbors=9)
+    #clf1 = DecisionTreeClassifier(max_depth=20)
+    #clf2 = KNeighborsClassifier(n_neighbors=9)
     clf3 = LinearSVC(C=1)
     #ens = VotingClassifier(estimators=[('dt', clf1), ('knn', clf2), ('svc', clf3)], voting='hard', weights=[1, 1, 1])
-    clf4 = MultinomialNB()
+    #clf4 = MultinomialNB()
     classifier = Pipeline( [('vec', vec), ('cls', clf3)] )
 
     classifier.fit(Xtrain, Ytrain)
