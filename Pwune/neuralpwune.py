@@ -46,20 +46,23 @@ def main():
     classes = sorted(list(set(Ytrain)))
     # Convert string labels to one-hot vectors
     Ytrain = label_binarize(Ytrain, classes)
+    Ytrain = np.array(Ytrain)
     print("length of train set:", len(Xtrain))
     print("length of test set:", len(Xtest))
-    Xtrain = np.array(Xtrain)
-    old_Xtrain = Xtrain
-    Xtrain = Xtrain[np.newaxis]
+    vectorizer = CountVectorizer()
+    encoder = LabelEncoder()
+    vectorizer.fit(Xtrain)
+
+    Xtrain = vectorizer.transform(Xtrain)
+    Xtest  = vectorizer.transform(Xtest)
+    print(Xtrain)
+    print(Xtrain.shape, Ytrain.shape)
     nb_features = Xtrain.shape[1]
-    Xtrain = old_Xtrain
-    print(Xtrain.shape)
-    print(Ytrain.shape)
     print(nb_features, 'features')
     nb_classes = Ytrain.shape[1]
     print(nb_classes, 'classes')
     # Build the model
-    print(len(Xtrain), len(Ytrain))
+    #print(len(Xtrain), len(Ytrain))
     print("Building model...")
     model = Sequential()
     # Single 500-neuron hidden layer with sigmoid activation
