@@ -22,6 +22,7 @@ def read_data():
 
 def main():
     data = read_data()
+    A1 = np.array(data[data.columns[0]].tolist())
     A = np.array(data['id'].tolist())
     B = np.array(data['hyperp'].tolist())
     C = np.array(data['bias'].tolist())
@@ -33,9 +34,11 @@ def main():
     I = np.array(data['text'].tolist())
     J = np.array(data['raw_text'].tolist())
 
+
     kf = ShuffleSplit(n_splits=1, test_size=0.1)
     for train_index, test_index in kf.split(A):
         #print(train_index, test_index)
+        A1train, A1test = A1[train_index], A1[test_index]
         Atrain, Atest = A[train_index], A[test_index]
         Btrain, Btest = B[train_index], B[test_index]
         Ctrain, Ctest = C[train_index], C[test_index]
@@ -48,14 +51,14 @@ def main():
         Jtrain, Jtest = J[train_index], J[test_index]
         with open('training_set_small.csv', mode='w') as csv_file:
             csv_writer = csv.writer(csv_file, delimiter='\t')
-            csv_writer.writerow(['id', 'hyperp', 'bias', 'url', 'labeledby', 'publisher', 'date', 'title', 'text', 'raw_text'])
+            csv_writer.writerow(['','id', 'hyperp', 'bias', 'url', 'labeledby', 'publisher', 'date', 'title', 'text', 'raw_text'])
             for i in range(len(Atrain)):
-                csv_writer.writerow([Atrain[i],Btrain[i],Ctrain[i],Dtrain[i],Etrain[i],Ftrain[i],Gtrain[i],Htrain[i],Itrain[i],Jtrain[i]])
+                csv_writer.writerow([A1train[i],Atrain[i],Btrain[i],Ctrain[i],Dtrain[i],Etrain[i],Ftrain[i],Gtrain[i],Htrain[i],Itrain[i],Jtrain[i]])
         with open('test_set_small.csv', mode='w') as csv_file2:
             csv_writer2 = csv.writer(csv_file2, delimiter='\t')
-            csv_writer2.writerow(['id', 'hyperp', 'bias', 'url', 'labeledby', 'publisher', 'date', 'title', 'text', 'raw_text'])
+            csv_writer2.writerow(['','id', 'hyperp', 'bias', 'url', 'labeledby', 'publisher', 'date', 'title', 'text', 'raw_text'])
             for i in range(len(Atest)):
-                csv_writer2.writerow([Atest[i],Btest[i],Ctest[i],Dtest[i],Etest[i],Ftest[i],Gtest[i],Htest[i],Itest[i],Jtest[i]])
+                csv_writer2.writerow([A1test[i],Atest[i],Btest[i],Ctest[i],Dtest[i],Etest[i],Ftest[i],Gtest[i],Htest[i],Itest[i],Jtest[i]])
 
 
 
