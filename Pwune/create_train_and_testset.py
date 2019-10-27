@@ -35,7 +35,7 @@ def main():
     J = np.array(data['raw_text'].tolist())
 
 
-    kf = ShuffleSplit(n_splits=1, test_size=0.1)
+    kf = ShuffleSplit(n_splits=1, test_size=0.2)
     for train_index, test_index in kf.split(A):
         #print(train_index, test_index)
         A1train, A1test = A1[train_index], A1[test_index]
